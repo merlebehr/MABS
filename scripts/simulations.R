@@ -5,12 +5,16 @@ print('start running job')
 library(combinat)
 source('functions.R')
 
+args <- as.numeric(args)
+print("args = ")
+print(args)
+
 m <- args[1]
-sigma <- args[2]
+sigma <- args[2]/100
 al <- 0:args[3]
 N <- args[4]
 
-print('m = ', m, 'sigma = ', sigma, 'al = 0:', max(al), 'N = ', N)
+print(paste('m = ', m, 'sigma = ', sigma, 'al = 0:', max(al), 'N = ', N))
 
 
 K <- length(al)^m
