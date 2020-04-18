@@ -2,7 +2,7 @@
 m <- 2
 al <- 0:1
 sigma <- 0.01
-N <- 2
+N <- 1000
 file_name <- paste0("../results/mse_m_",m, "_sigma_", 100 * sigma, "_al_", max(al), "_N_", N, ".Rdata")
 if(file.exists(file_name)){
   load(file = file_name)
