@@ -47,7 +47,7 @@ for(l in 1:length(MN)){
       perm <- permn(1:m)
       mse_perm <- numeric(length(perm))
       for(i in 1:length(perm)){
-        mse_perm[i] <- max(rowSums(estOm[perm[[i]],] - trOm)^2)/M
+        mse_perm[i] <- max(rowSums((estOm[perm[[i]],] - trOm)^2))/M
       }
       mse[k] <- min(mse_perm)
     }
