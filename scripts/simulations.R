@@ -21,9 +21,11 @@ K <- length(al)^m
 Am <- as.matrix(expand.grid(rep(list(al), m)))
 
 MN <- c(10, 20, 100)
-nN <- c(50, 60, 70, 80, 90, seq(100, 500, 50))
+nN <- c(50, 60, 70, 80, 90, seq(100, 500, 50), seq(600, 1000, 100))
 
 mseN <- vector('list', length(MN) * length(nN))
+accAN <- vector('list', length(MN) * length(nN))
+
 
 ptm <- proc.time()
 for(l in 1:length(MN)){
@@ -37,6 +39,7 @@ for(l in 1:length(MN)){
     
     set.seed(1)
     mse <- numeric(N) + 0
+    accA <- numeric(N) + 0
     for(k in 1:N){
       trOm <- rOmega(m , M)
       trA <- matrix(sample(al, n * m, replace = T), ncol = m)
@@ -44,18 +47,27 @@ for(l in 1:length(MN)){
       
       estOm <- estOmega(y, m, al)
       
+      valEst <- Am %*% estOm
+      indEstA <- sapply(1:nrow(y), function(i) which.min(colSums( (y[i,] - t(valEst) )^2 ) ))
+      estA <- Am[indEstA, ]
+      
       perm <- permn(1:m)
       mse_perm <- numeric(length(perm))
+      accA_perm <- numeric(length(perm))
       for(i in 1:length(perm)){
         mse_perm[i] <- max(rowSums((estOm[perm[[i]],] - trOm)^2))/M
+        accA_perm[i] <- mean(estA[, perm[[i]]] == trA)
       }
       mse[k] <- min(mse_perm)
+      accA[k] <- max(accA_perm)
     }
     mseN[[length(nN)*(l - 1) + j]] <- mse
+    accAN[[length(nN)*(l - 1) + j]] <- accA
+    
   }
 }
 time <- round(proc.time() - ptm,2)
 print(paste("total run time was", time[1], time[2], time[3]))
 
-save(file = paste0("../results/mse_m_",m, "_sigma_", 100 * sigma, "_al_", max(al), "_N_", N, ".Rdata"), mseN, MN, nN, m, sigma, al, N)
+save(file = paste0("../results/mse_m_",m, "_sigma_", 100 * sigma, "_al_", max(al), "_N_", N, ".Rdata"), mseN, accAN, MN, nN, m, sigma, al, N)
 
