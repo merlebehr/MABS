@@ -13,8 +13,9 @@ m <- args[1]
 sigma <- args[2]/100
 al <- 0:args[3]
 N <- args[4]
+seed <- args[5]
 
-print(paste('m = ', m, 'sigma = ', sigma, 'al = 0:', max(al), 'N = ', N))
+print(paste('m = ', m, 'sigma = ', sigma, 'al = 0:', max(al), 'N = ', N, 'seed = ', seed))
 
 
 K <- length(al)^m
@@ -37,7 +38,7 @@ for(l in 1:length(MN)){
     n <- nN[j]
     print(paste('n = ', n, 'iteration', j, 'out of', length(nN)))
     
-    set.seed(1)
+    set.seed(seed)
     mse <- numeric(N) + 0
     accA <- numeric(N) + 0
     for(k in 1:N){
@@ -69,5 +70,5 @@ for(l in 1:length(MN)){
 time <- round(proc.time() - ptm,2)
 print(paste("total run time was", time[1], time[2], time[3]))
 
-save(file = paste0("../results/mse_m_",m, "_sigma_", 100 * sigma, "_al_", max(al), "_N_", N, ".Rdata"), mseN, accAN, MN, nN, m, sigma, al, N)
+save(file = paste0("../results/mse_m_",m, "_sigma_", 100 * sigma, "_al_", max(al), "_N_", N, "_seed_", seed, ".Rdata"), mseN, accAN, MN, nN, m, sigma, al, N)
 
