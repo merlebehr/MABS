@@ -9,8 +9,11 @@
 # Matrix with rows equal to the K estimated centers each of dimension M
 clustLloySpec <- function(y, K){
   
+  library(mgcv)
+  
   y_svd <- svd(t(y), nu = K, nv = 0)
   hy <- t(y_svd$u %*% t(y_svd$u) %*% t(y))
+  hy <- uniquecombs(hy)
   
   ind <- sample(1:nrow(hy), K)
   centers <- hy[ind,]
@@ -37,7 +40,7 @@ clustLloySpec <- function(y, K){
     
   }
   
-  clusters <- kmeans(y, centers_best, iter.max = max(10, ceiling(4* log(n)) ))$centers
+  clusters <- kmeans(y, centers_best, iter.max = max(10, ceiling(4* log(nrow(y))) ))$centers
   attr(clusters, "init") <- centers_best
 
   return(clusters)
@@ -70,6 +73,8 @@ estOmega <- function(y, m, al = c(0,1)){
   val <- clustLloySpec(y, K) #initalize cluster centers with spectral clustering
   val <- val[order(rowSums(abs(val)^2)),] #reorder centers by their norm
   
+  baseline <- val[1,]
+  
   val <- val[-1,]
   
   omega <- matrix(nrow = m, ncol = M)
@@ -90,6 +95,10 @@ estOmega <- function(y, m, al = c(0,1)){
     m_run <- m_run + 1
   }
     
+  ind <- order(rowSums(omega), decreasing = T)
+  omega <- omega[ind,]
+  
+  attr(omega, "baseline") <- baseline
   return(omega)
 }
 
