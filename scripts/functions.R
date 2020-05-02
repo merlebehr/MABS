@@ -120,3 +120,58 @@ rOmega <- function(m,M){
   as.matrix(ans, nrow = m, ncol = M)
 }
 
+
+### Lloyd's algorithms for iterative updates
+lloyd <- function (y, m, al, omega) {
+  library(lsei)
+  
+  tsh   <-  1e-3
+  M <- ncol(y)
+  n <- nrow(y)
+  
+  omdiff <- tsh
+  biasV <- rep(0, M)
+  
+
+  
+  maxIt   <- 100 # 10e2
+  countIt <- 0
+  Al <- as.matrix(expand.grid(rep(list(al), m)))
+  
+  while (omdiff >= tsh && countIt <= maxIt) {
+    
+    val <- Al %*% omega[1:m,]
+    pi <- sapply(1:nrow(y), function(x) which.min(colSums((y[x,] - t(val))^2)))
+    
+
+    omegaOld <- omega
+    
+    A = Al[pi,]
+    E = rbind(diag(m),-diag(m), rep(-1,ncol(A)))
+    f = c(rep(0,m),rep(-1,m), -1)
+
+    aux <- sapply(1:M, function(x) lsei(a = A, b = y[,x], e = E, f = f))
+    omega <- aux[1:m, ]
+   
+    omdiff  <- max(abs(omega- omegaOld))
+    countIt <- countIt + 1
+  }
+  
+  if (omdiff >= tsh)
+    warning(paste("Lloyds algorithm not converged with omega diff =",
+                  round(omdiff, digits = 6), "and threshold =", tsh))
+  
+  ord   <- order(rowSums(omega),decreasing=TRUE)
+  omega <- omega[ord,]
+  pi    <- sapply(pi, function(x) which(colSums((Al[x,ord] - t(Al))^2) == 0))
+  
+  estOm <- omega
+  estA <- Al[pi,]
+  colnames(estOm) <- colnames(y)
+  rownames(estA) <- rownames(y)
+  return(list(estOm = estOm, estA = estA))
+}
+
+
+
+
