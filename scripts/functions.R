@@ -99,6 +99,7 @@ estOmega <- function(y, m, al = c(0,1)){
   omega <- omega[ind,]
   
   attr(omega, "baseline") <- baseline
+  colnames(omega) <- colnames(y)
   return(omega)
 }
 
