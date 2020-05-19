@@ -148,12 +148,13 @@ round(y[1:17, ],2)
 
 
 ###### make plots
-m <- 2
-al <- c(0,0.5,1)
+m <- 3
+al <- c(0, 1)
 estOm <- estOmega(y = y, m = m, al = al)
 ans <- lloyd(y, m, al = al, omega = estOm)
 mse <- sqrt(mean((y[1:length(ind_somVar),] - (ans$estA %*% ans$estOm)[1:length(ind_somVar),])^2))
-
+res <- y[1:length(ind_somVar),] - (ans$estA %*% ans$estOm)[1:length(ind_somVar),]
+res_all <- y - (ans$estA %*% ans$estOm)
 
 
 pdf(file = paste0("../results/plots/cancer_example_m_", m, "al_length_", length(al),"_mse_",round(mse,3)*1000, ".pdf"), width = 15, height = 9) 
@@ -183,10 +184,11 @@ if(m == 2){
 if(m == 3){
   at_clones <- c(0,0.5,1)
 }
+at_location <- seq(0,16/17,1/17)
 
-image(ans$estA[1:17,], col = col_fill, axes = F)
-axis(1, at =seq(0,16/17,1/17), labels = names_somVar)
-axis(1, at = 16/17, labels = names_somVar[17])
+image(at_location, at_clones, ans$estA[1:17,], col = col_fill, axes = F, xlab = "SNP", ylab = "clone")
+axis(1, at =at_location, labels = names_somVar)
+#axis(1, at = 16/17, labels = names_somVar[17])
 axis(2, at = at_clones, labels = paste("C", 1:ncol(ans$estA)))
 if(m == 3){
   axis(2, at = at_clones[2], labels = "C2")
@@ -194,4 +196,99 @@ if(m == 3){
 
 box()
 dev.off()
+
+data <- data.frame(res = as.numeric(res), gene = rep(rownames(res), ncol(res) ), 
+                   location = rep(colnames(res), each = nrow(res)))
+ggplot(data, aes(location, gene)) +
+  geom_raster(aes(fill = res)) +
+  scale_fill_gradientn(colours=c("blue","white", "red"), limits = c(-0.25,0.25))
+
+ggsave( paste0("../results/plots/residuals_cancer_example_", length(al), "_m", m, ".png"))
+
+
+#------------ simulate with estimate as ground truth
+
+trOm <- ans$estOm
+trA <- ans$estA
+n <- nrow(ans$estA)
+M <- ncol(omega)
+sigma <- 0 #mad(res_all)
+
+set.seed(5)
+K <- 100
+estOm_K <- vector('list', K)
+estA_K <- vector('list', K)
+for(k in 1:K){
+  noise <-  rbind( matrix(rnorm(length(ind_somVar) * M, sd = sigma), ncol = ncol(trOm)), 
+                   matrix(0, nrow = n - length(ind_somVar), ncol = ncol(trOm))) # sample(res_all, n * M, replace = T)
+  y <- trA %*% trOm +  noise
+  estOm <- estOmega(y = y, m = m, al = al)
+  ansSim <- lloyd(y, m, al = al, omega = estOm)
+  estOm <- ansSim$estOm
+  estA <- ansSim$estA
+  
+  perm <- permn(1:m)
+  mse_perm <- numeric(length(perm))
+  accA_perm <- numeric(length(perm))
+  for(i in 1:length(perm)){
+    mse_perm[i] <- max(rowSums((estOm[perm[[i]],] - trOm)^2))/M
+    accA_perm[i] <- mean(estA[, perm[[i]]] == trA)
+  }
+  i_best <- which.max(accA_perm)
+  #i_best <- which.min(mse_perm)
+  estOm_K[[k]] <- estOm[perm[[i_best]],]
+  estA_K[[k]] <- estA[, perm[[i_best]]]
+  
+  #estOm_K[[k]] <- estOm
+  #estA_K[[k]] <- estA
+}
+
+estOm_q <- apply(simplify2array(estOm_K), 1:2, quantile, prob = c(0.25, 0.75))
+estA_acc <- apply(simplify2array(estA_K), 1:2, function(x) mean(x == median(x)))
+
+
+
+
+pdf(file = paste0("../results/plots/cancer_example_error_sim_m_", m, "al_length_", length(al),"_mse_",round(mse,3)*1000, ".pdf"), width = 15, height = 9) 
+layout(rbind(1,2), heights = c(2,1))
+eps <- 0.15
+col_clone <- c("black", "red", "blue")
+pch_clones <- c(19, 17, 15)
+
+plot(trOm[1,], axes = F, xlab = "location", ylab = "frequency", col = col_clone[1], pch = pch_clones[1], ylim = c(0,0.85))
+arrows(x0=1:M, y0=trOm[1,] - estOm_q[1,1,], x1=1:M, 
+       y1=trOm[1,] + estOm_q[2,1,], code=3, angle=90, length=0.1, col = col_clone[1])
+for(i in 2:nrow(ans$estOm)){
+  x <- 1:M + (i - 1)*eps
+  lines(x, trOm[i,], col = col_clone[i], pch = pch_clones[i], type = "p")
+  arrows(x0=x, y0=trOm[i,] - estOm_q[1,i,], x1=x, 
+         y1=trOm[i,] + estOm_q[2,i,], code=3, angle=90, length=0.1, col = col_clone[i])
+}
+axis(1, at = 1:ncol(ans$estOm), labels = colnames(ans$estOm))
+axis(2, at = seq(0,1,0.1))
+box()
+
+
+
+if(m == 2){
+  at_clones <- c(0,1)
+}
+if(m == 3){
+  at_clones <- c(0,0.5,1)
+}
+
+at_location <- seq(0,16/17,1/17)
+
+image(at_location, at_clones, ans$estA[1:17,], col = col_fill, axes = F, xlab = "SNP", ylab = "clone")
+text(x = rep(at_location,m), y = rep(at_clones, each = 17), round(estA_acc[1:17,],2), col = "red", cex = 1)
+axis(1, at = at_location, labels = names_somVar)
+#axis(1, at = 16/17, labels = names_somVar[17])
+axis(2, at = at_clones, labels = paste("C", 1:ncol(ans$estA)))
+if(m == 3){
+  axis(2, at = at_clones[2], labels = "C2")
+}
+
+box()
+dev.off()
+
 
