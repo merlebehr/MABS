@@ -15,30 +15,35 @@ clustLloySpec <- function(y, K){
   hy <- t(y_svd$u %*% t(y_svd$u) %*% t(y))
   hy <- uniquecombs(hy)
   
-  ind <- sample(1:nrow(hy), K)
-  centers <- hy[ind,]
-  clusters_init <- kmeans(hy, centers)
-  error <- sum((fitted(clusters_init) - hy)^2)
-  
-  error_best <- error
-  centers_best <- centers
-  
-  for(i in 1:(K*200) ){
-    ind1 <- sample(1:nrow(hy),1)
-    ind2 <- sample(1:K,1)
+  if(nrow(hy) > K){
+    ind <- sample(1:nrow(hy), K)
+    centers <- hy[ind,]
+    clusters_init <- kmeans(hy, centers)
+    error <- sum((fitted(clusters_init) - hy)^2)
     
-    if(min(colSums( (t(centers) - hy[ind1, ])^2 )) != 0){
-      centers[ind2,] <- hy[ind1,]
-      clusters_init <- kmeans(hy, centers)
-      error <- sum((fitted(clusters_init) - hy)^2)
+    error_best <- error
+    centers_best <- centers
+    
+    for(i in 1:(K*200) ){
+      ind1 <- sample(1:nrow(hy),1)
+      ind2 <- sample(1:K,1)
       
-      if(error < error_best){
-        centers_best <- centers
-        error_best <- error
+      if(min(colSums( (t(centers) - hy[ind1, ])^2 )) != 0){
+        centers[ind2,] <- hy[ind1,]
+        clusters_init <- kmeans(hy, centers)
+        error <- sum((fitted(clusters_init) - hy)^2)
+        
+        if(error < error_best){
+          centers_best <- centers
+          error_best <- error
+        }
       }
+      
     }
-    
+  }else{
+    centers_best <- hy
   }
+ 
   
   clusters <- kmeans(y, centers_best, iter.max = max(10, ceiling(4* log(nrow(y))) ))$centers
   attr(clusters, "init") <- centers_best
@@ -174,5 +179,14 @@ lloyd <- function (y, m, al, omega) {
 }
 
 
-
+asbOm <- function(omega, al){
+  alDiff <- sort(unique(c(0, as.numeric(dist(al)), - as.numeric(dist(al)))))
+  m <- nrow(omega)
+  M <- ncol(omega)
+  AlDiff <- as.matrix(expand.grid(rep(list(alDiff), m)))
+  indZ <- rowSums(AlDiff^2) == 0
+  AlDiff <- AlDiff[!indZ,]
+  valDiff <- sqrt(rowSums((AlDiff %*% omega)^2)/M)
+  return(min(valDiff))
+}
 
