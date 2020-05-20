@@ -2,13 +2,13 @@ library(tidyverse)
 library(ggmap)
 source("functions.R")
 
-al <- 0:3
-M <- 2
-seed <- 1
+al <- 0:2
+M <- 3
+seed <- 3
 
 
 m <- 2
-omRange <- seq(0,1,0.01)
+omRange <- seq(0,1,0.005)
 AsbOm <- matrix(nrow = length(omRange), ncol = length(omRange))
 
 if(M > 2){
@@ -31,6 +31,6 @@ ggplot(data, aes(omega11, omega21)) +
   geom_raster(aes(fill = asb)) +
   scale_fill_gradientn(colours=c("white","black"), limits = c(0,1))
 
-ggsave( paste0("../results/plots/asb_plot_al_", max(al),"_M_",M,"_seed_",seed,".pdf"))
+ggsave( paste0("../results/plots/asb_plot_al_", max(al),"_M_",M,"_seed_",seed,".png"))
 
 

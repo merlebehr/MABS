@@ -148,8 +148,8 @@ round(y[1:17, ],2)
 
 
 ###### make plots
-m <- 3
-al <- c(0, 1)
+m <- 2
+al <- c(0,0.5,1)
 estOm <- estOmega(y = y, m = m, al = al)
 ans <- lloyd(y, m, al = al, omega = estOm)
 mse <- sqrt(mean((y[1:length(ind_somVar),] - (ans$estA %*% ans$estOm)[1:length(ind_somVar),])^2))
@@ -211,8 +211,9 @@ ggsave( paste0("../results/plots/residuals_cancer_example_", length(al), "_m", m
 trOm <- ans$estOm
 trA <- ans$estA
 n <- nrow(ans$estA)
-M <- ncol(omega)
-sigma <- 0 #mad(res_all)
+M <- ncol(trOm)
+sigma <- sd(res_all[1:length(ind_somVar),]) 
+sigma0 <- sd(res_all[(length(ind_somVar) + 1):nrow(res_all),])
 
 set.seed(5)
 K <- 100
@@ -220,10 +221,14 @@ estOm_K <- vector('list', K)
 estA_K <- vector('list', K)
 for(k in 1:K){
   noise <-  rbind( matrix(rnorm(length(ind_somVar) * M, sd = sigma), ncol = ncol(trOm)), 
-                   matrix(0, nrow = n - length(ind_somVar), ncol = ncol(trOm))) # sample(res_all, n * M, replace = T)
+                   matrix(rnorm((nrow(res_all) - length(ind_somVar)) * M, sd = sigma0), nrow = n - length(ind_somVar), ncol = ncol(trOm))) # sample(res_all, n * M, replace = T)
   y <- trA %*% trOm +  noise
+  round(trOm,2)
   estOm <- estOmega(y = y, m = m, al = al)
+  round(estOm,2)
   ansSim <- lloyd(y, m, al = al, omega = estOm)
+  round(ansSim$estOm,2)
+  
   estOm <- ansSim$estOm
   estA <- ansSim$estA
   
@@ -243,7 +248,9 @@ for(k in 1:K){
   #estA_K[[k]] <- estA
 }
 
-estOm_q <- apply(simplify2array(estOm_K), 1:2, quantile, prob = c(0.25, 0.75))
+estOm_q <- apply(simplify2array(estOm_K), 1:2, quantile, prob = c(0.05, 0.95))
+estOm_q2 <- apply(simplify2array(estOm_K), 1:2, quantile, prob = c(0.25, 0.75))
+
 estA_acc <- apply(simplify2array(estA_K), 1:2, function(x) mean(x == median(x)))
 
 
@@ -256,13 +263,15 @@ col_clone <- c("black", "red", "blue")
 pch_clones <- c(19, 17, 15)
 
 plot(trOm[1,], axes = F, xlab = "location", ylab = "frequency", col = col_clone[1], pch = pch_clones[1], ylim = c(0,0.85))
-arrows(x0=1:M, y0=trOm[1,] - estOm_q[1,1,], x1=1:M, 
-       y1=trOm[1,] + estOm_q[2,1,], code=3, angle=90, length=0.1, col = col_clone[1])
+arrows(x0=1:M, y0 = estOm_q[1,1,], x1=1:M, y1=estOm_q[2,1,], code=3, angle=90, length=0, col = col_clone[1])
+arrows(x0=1:M, y0 = estOm_q2[1,1,], x1=1:M, y1=estOm_q2[2,1,], code=3, angle=90, length=0.1, col = col_clone[1])
+
 for(i in 2:nrow(ans$estOm)){
   x <- 1:M + (i - 1)*eps
   lines(x, trOm[i,], col = col_clone[i], pch = pch_clones[i], type = "p")
-  arrows(x0=x, y0=trOm[i,] - estOm_q[1,i,], x1=x, 
-         y1=trOm[i,] + estOm_q[2,i,], code=3, angle=90, length=0.1, col = col_clone[i])
+  arrows(x0=x, y0 = estOm_q[1,i,], x1=x, y1=estOm_q[2,i,], code=3, angle=90, length=0, col = col_clone[i])
+  arrows(x0=x, y0 = estOm_q2[1,i,], x1=x, y1=estOm_q2[2,i,], code=3, angle=90, length=0.1, col = col_clone[i])
+  
 }
 axis(1, at = 1:ncol(ans$estOm), labels = colnames(ans$estOm))
 axis(2, at = seq(0,1,0.1))
