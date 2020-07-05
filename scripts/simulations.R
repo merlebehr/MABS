@@ -1,5 +1,13 @@
 #!/usr/bin/env Rscript
-args = commandArgs(trailingOnly=TRUE)
+args = commandArgs(trailingOnly=TRUE) 
+
+#arguments passed to the script should be: 
+# 1. m (number of souces), 
+# 2. 100 * sigma (standard deviation), 
+# 3. maximum alphabet value k (alphabet = 0,...,k),
+# 4. number of Monte Carlo runs
+# 5. random seed
+
 print('start running job')
 
 library(combinat)

@@ -4,7 +4,8 @@ library(combinat)
 library(Clomial)
 source('functions.R')
 
-# Example from Clomial R package as in "Inferring clonal composition from multiple sections of a breast cancer", Zare et al., 2014
+# Example from Clomial R package as in 
+# "Inferring clonal composition from multiple sections of a breast cancer", Zare et al., 2014
 set.seed(1)
 data(breastCancer)
 Dc <- breastCancer$Dc
@@ -39,7 +40,8 @@ sqrt(mean((Dt/Dc - estA_clomial_m3 %*% estOm_clomial_m3)^2))
 
 
 
-#load full data set
+# load full data set
+# data can be downloaded from "https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003703#s5"
 data <- vector('list', 14)
 for(i in 1:length(data)){
   data[[i]] <- read_excel("../data/pcbi_data2.xls", sheet = i)
@@ -240,12 +242,8 @@ for(k in 1:K){
     accA_perm[i] <- mean(estA[, perm[[i]]] == trA)
   }
   i_best <- which.max(accA_perm)
-  #i_best <- which.min(mse_perm)
   estOm_K[[k]] <- estOm[perm[[i_best]],]
   estA_K[[k]] <- estA[, perm[[i_best]]]
-  
-  #estOm_K[[k]] <- estOm
-  #estA_K[[k]] <- estA
 }
 
 estOm_q <- apply(simplify2array(estOm_K), 1:2, quantile, prob = c(0.05, 0.95))
@@ -291,7 +289,6 @@ at_location <- seq(0,16/17,1/17)
 image(at_location, at_clones, ans$estA[1:17,], col = col_fill, axes = F, xlab = "SNP", ylab = "clone")
 text(x = rep(at_location,m), y = rep(at_clones, each = 17), round(estA_acc[1:17,],2), col = "red", cex = 1)
 axis(1, at = at_location, labels = names_somVar)
-#axis(1, at = 16/17, labels = names_somVar[17])
 axis(2, at = at_clones, labels = paste("C", 1:ncol(ans$estA)))
 if(m == 3){
   axis(2, at = at_clones[2], labels = "C2")

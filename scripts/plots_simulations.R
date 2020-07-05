@@ -33,7 +33,6 @@ pdf(file = paste0("../results/plots/plot_",file_name,".pdf"), width = 12, height
 par(mfrow = c(1,2), mar = c(5,5,1,1), oma = c(0,0,3,0), cex = 1.5)
 ind <- 1:length(nN)
 limY <- range(mseNm[,])
-#limY <- c(0, 5e-5)
 colM <- c("black", "blue", "orange", "darkgreen", "red", "brown", "purple")
 plot(nN, mseNm[,1], type = "l", ylim = limY, xlab = "n", ylab = expression(paste("||",hat(omega) - omega,"||"^2,""["Inf,2"]/M)), col = colM[1], lwd = 2) 
 
@@ -61,19 +60,12 @@ for(i in 2:ncol(mseNm)){
     fit <- lm(y ~ x -1)
     lines(nN[ind], fit$fitted.values, col = colM[i], lwd = 1, lty = 2)
   }
- 
   lines(nN, (mseNm[,i]), col = colM[i], lwd = 2) 
-  # legend(x = min(nN[ind]) +  0.5 *( max(nN[ind]) - min(nN[ind])), y = limY[2], 
-  #        legend = paste("M = ", MN), col = colM, lty = rep(1, length(MN)),
-  #        x.intersp = 0.8, y.intersp = 0.8)
 }
 
 name_ylab <- expression(paste('mean( ', F ==  hat(F), ' )'))
 
 expression(paste("||",hat(omega) - omega,"||"^2,""["Inf,2"]/M))
-
-#sub_expression <- expression(paste())
-#ylab_name <- expression(paste(Sigma, "1", ""[ "F",""["i,j"], " = ", hat(F),""["i,j"]], "/(nM)"))
 
 ylab_name <- expression("( " * Sigma * ""["i,j"] * "1" * ""[ "{ F" * ""["i,j"] * " = " * hat(F) * ""["i,j"] * "}" ] * " ) / (nM)")
 

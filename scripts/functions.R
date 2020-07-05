@@ -52,7 +52,7 @@ clustLloySpec <- function(y, K){
 }
 
 
-### Estimates the mixing weights from a linear model with unknown finite alphabet design
+### Estimates the mixing weights in a MABS model
 #
 # Input:
 # y numeric matrix with observations, where nrow(y) equal to the number of observations and ncol(y) equal to the dimension of an individual observation
@@ -128,6 +128,14 @@ rOmega <- function(m,M){
 
 
 ### Lloyd's algorithms for iterative updates
+# Input:
+# y numeric matrix with observations, where nrow(y) equal to the number of observations and ncol(y) equal to the dimension of an individual observation
+# m integer with the number of sources
+# al numeric vector with the alphabet
+# omega numeric matrix with m rows and entries in (0,1) and each of the M columns sums up to one.
+#
+# Output:
+# list with estimated weight matrix estOm and estimated alphabet matrix estA
 lloyd <- function (y, m, al, omega) {
   library(lsei)
   
@@ -138,9 +146,7 @@ lloyd <- function (y, m, al, omega) {
   omdiff <- tsh
   biasV <- rep(0, M)
   
-
-  
-  maxIt   <- 100 # 10e2
+  maxIt   <- 100 
   countIt <- 0
   Al <- as.matrix(expand.grid(rep(list(al), m)))
   
@@ -148,8 +154,6 @@ lloyd <- function (y, m, al, omega) {
     
     val <- Al %*% omega[1:m,]
     pi <- sapply(1:nrow(y), function(x) which.min(colSums((y[x,] - t(val))^2)))
-    
-
     omegaOld <- omega
     
     A = Al[pi,]
@@ -178,7 +182,15 @@ lloyd <- function (y, m, al, omega) {
   return(list(estOm = estOm, estA = estA))
 }
 
-
+# Computes ASB for given weight matrix and alphabet
+#
+# Input:
+# omega numeric matrix with m rows and entries in (0,1) and each of the M columns sums up to one.
+# al numeric vector with the alphabet
+#
+# Output:
+# asb positive numeric number 
+#
 asbOm <- function(omega, al){
   alDiff <- sort(unique(c(0, as.numeric(dist(al)), - as.numeric(dist(al)))))
   m <- nrow(omega)
