@@ -78,7 +78,7 @@ par(mfrow = c(2,2), mar = c(5,5,1,1), oma = c(0,0,3,0), cex = 1.5)
 limY <- range(c(mseNm[indN_range,], mseNm_nmf[indN_range,]))
 colM <- c("black", "blue", "orange", "darkgreen", "red", "brown", "purple")
 plot(nN[indN_range], mseNm[indN_range,1], type = "l", ylim = limY, xlab = "n", 
-     ylab = expression(paste("||",hat(omega) - omega,"||"^2,""["Inf,2"]/M)), col = colM[1], lwd = 2) 
+     ylab = expression(paste("||",hat(Omega) - Omega,"||"^2,""["Inf,2"]/M)), col = colM[1], lwd = 2) 
 lines(nN, mseNm_nmf[,1], col = colM[1], lwd = 2, lty = 2)
 
 if(max(al) == 1){
@@ -100,7 +100,7 @@ for(i in 2:ncol(mseNm)){
 
 
 #ylab_name <- expression("( " * Sigma * ""["i,j"] * "1" * ""[ "{ F" * ""["i,j"] * " = " * hat(F) * ""["i,j"] * "}" ] * " ) / (nM)")
-ylab_name <- expression(paste("||",hat(F) - F,"||"^2,""["2,Inf"]/M))
+ylab_name <- expression(paste("||",hat(F) - F,"||"^2,""["2,Inf"]/n))
 limY <- range(c(accANm[indN_range,], accANm_nmf[indN_range,]))
 
 plot(nN[indN_range], accANm[indN_range,1], type = "l", ylim = limY, xlab = "n",ylab = ylab_name, col = colM[1], lwd = 2) 
@@ -118,7 +118,7 @@ for(i in 2:ncol(mseNm)){
 limY <- range(c(mseImNm[indN_range,], mseImNm_nmf[indN_range,], mseImNm_em[indN_range,]), na.rm = T)
 colM <- c("black", "blue", "orange", "darkgreen", "red", "brown", "purple")
 plot(nN[indN_range], mseImNm[indN_range,1], type = "l", ylim = limY, xlab = "n", 
-     ylab = expression(paste("||",hat(F) * hat(omega) - F * omega,"||"^2,""[""]/(Mn))), col = colM[1], lwd = 2) 
+     ylab = expression(paste("||",hat(F) * hat(Omega) - F * Omega,"||"^2,""[""]/(Mn))), col = colM[1], lwd = 2) 
 lines(nN, mseImNm_nmf[,1], col = colM[1], lwd = 2, lty = 2)
 lines(nN, mseImNm_em[,1], col = colM[1], lwd = 2, lty = 3)
 

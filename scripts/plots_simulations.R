@@ -1,7 +1,7 @@
 
 m <- 2
-al <- 0:1
-sigma <- 1.5
+al <- 0:2
+sigma <- 1
 plot_fit <- T
 
 file_name <- file_name <- paste0("mse_m_",m, "_sigma_", 100 * sigma, "_al_", max(al))
@@ -34,7 +34,7 @@ par(mfrow = c(1,2), mar = c(5,5,1,1), oma = c(0,0,3,0), cex = 1.5)
 ind <- 1:length(nN)
 limY <- range(mseNm[,])
 colM <- c("black", "blue", "orange", "darkgreen", "red", "brown", "purple")
-plot(nN, mseNm[,1], type = "l", ylim = limY, xlab = "n", ylab = expression(paste("||",hat(omega) - omega,"||"^2,""["Inf,2"]/M)), col = colM[1], lwd = 2) 
+plot(nN, mseNm[,1], type = "l", ylim = limY, xlab = "n", ylab = expression(paste("||",hat(Omega) - Omega,"||"^2,""["Inf,2"]/M)), col = colM[1], lwd = 2) 
 
 if(max(al) == 1){
   al_name = "{0,1}"
@@ -65,9 +65,9 @@ for(i in 2:ncol(mseNm)){
 
 name_ylab <- expression(paste('mean( ', F ==  hat(F), ' )'))
 
-expression(paste("||",hat(omega) - omega,"||"^2,""["Inf,2"]/M))
+expression(paste("||",hat(Omega) - Omega,"||"^2,""["Inf,2"]/M))
 
-ylab_name <- expression("( " * Sigma * ""["i,j"] * "1" * ""[ "{ F" * ""["i,j"] * " = " * hat(F) * ""["i,j"] * "}" ] * " ) / (nM)")
+ylab_name <- expression("( " * Sigma * ""["i,j"] * "1" * ""[ "{ F" * ""["i,j"] * " = " * hat(F) * ""["i,j"] * "}" ] * " ) / (nm)")
 
 
 plot(nN[ind], accANm[ind,1], type = "l", ylim = c(0,1), xlab = "n",ylab = ylab_name, col = colM[1], lwd = 2) 
